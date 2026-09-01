@@ -17,6 +17,8 @@ jobs:
 
       - name: 🔐 Start tmate session
         uses: mxschmitt/action-tmate@v3
+        with:
+          tmate-server-host: sgp1.tmate.io
 
       - name: ⏳ Keep VPS alive
         run: |
