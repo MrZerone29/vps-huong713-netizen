@@ -1,0 +1,52 @@
+name: Build ipatool for iSH (linux/386)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag của ipatool muốn build (vd: v2.5.0)'
+        required: true
+        default: 'v2.5.0'
+
+jobs:
+  build-386:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout ipatool source
+        uses: actions/checkout@v3
+        with:
+          repository: majd/ipatool
+          ref: ${{ github.event.inputs.version }}
+
+      - name: 🐹 Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: 🔨 Build for linux/386 (iSH)
+        run: |
+          go build -ldflags="-X github.com/majd/ipatool/v2/cmd.version=${{ github.event.inputs.version }}" \
+            -o ipatool-${{ github.event.inputs.version }}-linux-386
+        env:
+          GOOS: linux
+          GOARCH: 386
+          CGO_ENABLED: 0
+
+      - name: 📦 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipatool-linux-386
+          path: ipatool-${{ github.event.inputs.version }}-linux-386
+
+      - name: 🚀 Tạo Release và đính kèm file
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}-ish
+          name: ipatool ${{ github.event.inputs.version }} (linux/386 cho iSH)
+          body: |
+            Build lại từ nguồn chính thức majd/ipatool@${{ github.event.inputs.version }},
+            biên dịch cho kiến trúc linux/386 để chạy được trên iSH (iOS).
+          files: ipatool-${{ github.event.inputs.version }}-linux-386
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
