@@ -24,6 +24,13 @@ jobs:
           go-version: '1.22'
           cache: true
 
+      - name: 🧰 Cài gcc hỗ trợ build 32-bit
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gcc-multilib g++-multilib
+          printf '#!/bin/sh\nexec gcc -m32 "$@"\n' | sudo tee /usr/local/bin/cc32 > /dev/null
+          sudo chmod +x /usr/local/bin/cc32
+
       - name: 🔨 Build for linux/386 (iSH)
         run: |
           go build -ldflags="-X github.com/majd/ipatool/v2/cmd.version=${{ github.event.inputs.version }}" \
@@ -31,8 +38,8 @@ jobs:
         env:
           GOOS: linux
           GOARCH: 386
-
-          CGO_ENABLED: 0
+          CGO_ENABLED: 1
+          CC: cc32
 
       - name: 📦 Upload artifact
         uses: actions/upload-artifact@v4
