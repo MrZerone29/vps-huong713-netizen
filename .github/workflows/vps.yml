@@ -8,10 +8,7 @@ on:
 jobs:
   start-vps:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
-    env:
-      TMATE_SERVER: nyc1.tmate.io
-
+    timeout-minutes: 60
     steps:
       - name: ⬇️ Checkout
         uses: actions/checkout@v3
@@ -19,26 +16,12 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔐 Start tmate session
-        run: |
-          sudo apt update -y && sudo apt install -y tmate
-          tmate -S /tmp/tmate.sock new-session -d
-          tmate -S /tmp/tmate.sock wait tmate-ready
-          SSH=$(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-          echo "$SSH" | tee "${{ github.event.client_payload.vps_name || 'manual-vps' }}.txt"
-
-      - name: 📤 Gửi SSH lên server
-        run: |
-          SSH=$(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-          USER_NAME=${GITHUB_ACTOR}
-          POST_DATA="$USER_NAME | $SSH"
-          echo "🔗 SSH: $SSH"
-          curl -s -X POST https://web-server.x10.mx/vnc/index.php -d "ssh=$SSH"
-          curl -s -X POST https://web-server.x10.mx/Panel/ssh.php -d "ssh_data=$POST_DATA"
+        uses: mxschmitt/action-tmate@v3
 
       - name: ⏳ Keep VPS alive
         run: |
-          for i in $(seq 1 $((180))); do
-            echo "🟢 Running minute $i/180..."
+          for i in $(seq 1 $((60))); do
+            echo "🟢 Running minute $i/60..."
             sleep 60
           done
 
