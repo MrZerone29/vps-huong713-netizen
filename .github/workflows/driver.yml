@@ -1,10 +1,10 @@
-name: Build e1000e (interactive SSH)
+name: Open SSH session only
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  ssh:
     runs-on: ubuntu-latest
     container:
       image: debian:trixie
@@ -12,21 +12,9 @@ jobs:
       - name: Try tmate session (primary)
         id: tmate
         continue-on-error: true
-        timeout-minutes: 1
+        timeout-minutes: 5
         uses: mxschmitt/action-tmate@v3
 
       - name: Fallback to upterm if tmate failed
         if: steps.tmate.outcome != 'success'
         uses: owenthereal/action-upterm@v1
-
-      - name: Ensure output dir exists
-        if: always()
-        run: mkdir -p /tmp/output
-
-      - name: Upload built module
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e1000e-patched-ko
-          path: /tmp/output/*.ko
-          if-no-files-found: warn
