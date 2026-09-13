@@ -14,14 +14,10 @@ jobs:
         continue-on-error: true
         timeout-minutes: 1
         uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
 
       - name: Fallback to upterm if tmate failed
         if: steps.tmate.outcome != 'success'
         uses: owenthereal/action-upterm@v1
-        with:
-          limit-access-to-actor: true
 
       - name: Ensure output dir exists
         if: always()
