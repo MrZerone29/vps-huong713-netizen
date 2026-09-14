@@ -1,4 +1,4 @@
-name: Open SSH session only
+name: Open SSH session (Debian trixie build env)
 
 on:
   workflow_dispatch:
@@ -9,12 +9,21 @@ jobs:
     container:
       image: debian:trixie
     steps:
-      - name: Try tmate session (primary)
-        id: tmate
-        continue-on-error: true
-        timeout-minutes: 5
-        uses: mxschmitt/action-tmate@v3
+      - name: Checkout driver source
+        uses: actions/checkout@v4
 
-      - name: Fallback to upterm if tmate failed
-        if: steps.tmate.outcome != 'success'
+      - name: Cài build toolchain + đúng kernel headers 6.12.94+deb13
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            git curl wget openssh-client \
+            linux-headers-6.12.94+deb13-amd64 \
+            linux-headers-6.12.94+deb13-common
+          echo "== Headers path =="
+          ls /usr/src/ | grep 6.12.94
+
+      - name: Open upterm session
         uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true
